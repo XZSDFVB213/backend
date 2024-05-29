@@ -21,4 +21,4 @@ app.use(
   express.static(path.join(__dirname, "public"))
 );
 
-app.listen(PORT);
+app.listen(80);
