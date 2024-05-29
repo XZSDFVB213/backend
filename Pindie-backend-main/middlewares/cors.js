@@ -1,5 +1,6 @@
 const allowedCors = [
   "https://abakar.nomorepartiesco.ru",
+  "https://abakar1.nomorepartiesco.ru",
 ];
 
 function cors(req, res, next) {
