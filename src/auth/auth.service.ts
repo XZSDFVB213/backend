@@ -29,7 +29,11 @@ export class AuthService {
       throw new BadRequestException('Пароль не верный');
     }
     const token = this.jwt.sign({ id: user.id });
-    return { token };
+    const { password, ...safeUser } = user;
+    return {
+      token,
+      user: safeUser,
+    };
   }
 
   async register(dto: RegisterDto) {

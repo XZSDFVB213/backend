@@ -1,19 +1,26 @@
-import { Injectable } from '@nestjs/common';
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { NotFoundError } from 'rxjs';
 
 @Injectable()
 export class UserService {
-  create(createUserDto: CreateUserDto) {
-    return 'This action adds a new user';
-  }
-
+  constructor(private prisma: PrismaService) {}
   findAll() {
-    return `This action returns all user`;
+    const users = this.prisma.user.findMany();
+    return users;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
+  async findOne(id: string) {
+    const user = await this.prisma.user.findUniqueOrThrow({
+      where: { id },
+    });
+
+    const { password, ...safeUser } = user;
+
+    return safeUser;
   }
 
   update(id: number, updateUserDto: UpdateUserDto) {

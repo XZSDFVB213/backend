@@ -7,10 +7,15 @@ async function bootstrap() {
     const app = await core_1.NestFactory.create(app_module_1.AppModule);
     app.useGlobalPipes(new common_1.ValidationPipe());
     app.enableCors({
-        origin: ['http://localhost:4200', 'https://socialniy.ru'],
-        methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+        origin: [
+            'http://localhost:4200',
+            'https://socialniy.ru/',
+            'http://socialniy.ru/',
+            'https://socialniy.ru',
+            'http://socialniy.ru',
+            'https://api.socialniy.ru',
+        ],
         credentials: true,
-        allowedHeaders: 'Content-Type, Accept',
     });
     await app.listen(process.env.PORT ?? 3000);
 }
