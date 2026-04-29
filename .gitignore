@@ -32,7 +32,6 @@ yarn-error.log
 
 # Miscellaneous
 .env
-docker-compose.yml
 /.angular/cache
 .sass-cache/
 /connect.lock
