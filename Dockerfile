@@ -1,10 +1,11 @@
 # ---------- base ----------
-FROM node:20-alpine AS base
+FROM node:20-slim AS base
 
 WORKDIR /app
 
-COPY package*.json ./
+RUN apt-get update && apt-get install -y openssl
 
+COPY package*.json ./
 RUN npm install
 
 # ---------- build ----------
@@ -27,7 +28,6 @@ ENV NODE_ENV=production
 COPY package*.json ./
 RUN npm install --omit=dev
 
-# 👇 ВАЖНО: Prisma + build
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=build /app/node_modules/@prisma ./node_modules/@prisma
