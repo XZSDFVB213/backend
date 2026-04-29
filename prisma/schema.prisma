@@ -23,6 +23,8 @@ model Product {
   price       Int
   image       String
   description String
+  category    String
+  subcategory String
   stock       Int         @default(0)
   favoritedBy Favorite[]
   orderItems  OrderItem[]
