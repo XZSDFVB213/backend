@@ -20,6 +20,8 @@ FROM node:20-alpine AS production
 
 WORKDIR /app
 
+RUN apt-get update && apt-get install -y openssl
+
 ENV NODE_ENV=production
 
 COPY package*.json ./
