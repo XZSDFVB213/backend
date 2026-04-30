@@ -1,36 +1,20 @@
-# ---------- base ----------
-FROM node:20-slim AS base
+FROM node:20-slim
 
 WORKDIR /app
 
-RUN apt-get update && apt-get install -y openssl
+RUN apt-get update && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
 
 COPY package*.json ./
-RUN npm install
-
-# ---------- build ----------
-FROM base AS build
+RUN npm ci
 
 COPY . .
 
 RUN npx prisma generate
 RUN npm run build
 
-# ---------- production ----------
-FROM node:20-slim AS production
-
-WORKDIR /app
-
-RUN apt-get update && apt-get install -y openssl
-
 ENV NODE_ENV=production
 
-COPY package*.json ./
-RUN npm install --omit=dev
+# Оставляем только нужное для продакшена
+RUN npm ci --omit=dev --ignore-scripts
 
-COPY --from=build /app/dist ./dist
-COPY --from=build /app/node_modules/.prisma ./node_modules/.prisma
-COPY --from=build /app/node_modules/@prisma ./node_modules/@prisma
-COPY --from=build /app/prisma ./prisma
-
-CMD ["node", "dist/main.js"]
+CMD ["npm", "run", "start:prod"]
