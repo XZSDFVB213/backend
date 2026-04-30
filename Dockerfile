@@ -1,26 +1,41 @@
-FROM node:20-slim
+# ---------- BUILD STAGE ----------
+FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# Установка системных зависимостей
-RUN apt-get update && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
-
-# Копируем package.json и устанавливаем все зависимости (для сборки)
+# зависимости
 COPY package*.json ./
-RUN npm ci
+RUN npm install
 
-# Копируем исходный код
+# копируем проект
 COPY . .
 
-# Генерируем Prisma Client и собираем приложение
+# генерим prisma client
 RUN npx prisma generate
+
+# билдим nest
 RUN npm run build
 
-# Переключаемся в production
+
+# ---------- PRODUCTION STAGE ----------
+FROM node:20-alpine AS production
+
+WORKDIR /app
+
 ENV NODE_ENV=production
 
-# Устанавливаем только production зависимости
-RUN npm ci --omit=dev --ignore-scripts
+# ставим только prod зависимости
+COPY package*.json ./
+RUN npm install --omit=dev
 
-# Запуск
+# копируем build + prisma runtime
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
+COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
+COPY --from=builder /app/prisma ./prisma
+
+# порт
+EXPOSE 3000
+
+# запуск
 CMD ["node", "dist/main.js"]
