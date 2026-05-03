@@ -1,41 +1,30 @@
-# ---------- BUILD STAGE ----------
-FROM node:20-bookworm AS builder
+FROM node:20.17.0-alpine as base
+
+RUN apk add --no-cache libc6-compat
 
 WORKDIR /app
 
-# зависимости
 COPY package*.json ./
+
 RUN npm install
 
-# копируем проект
+FROM base as build
+
 COPY . .
 
-# генерим prisma client
-RUN npx prisma generate
+RUN npm run prisma:generate
 
-# билдим nest
 RUN npm run build
 
-
-# ---------- PRODUCTION STAGE ----------
-FROM node:20-bookworm AS production
+FROM base as production
 
 WORKDIR /app
 
-ENV NODE_ENV=production
+COPY --from=build /app/package*.json ./
 
-# ставим только prod зависимости
-COPY package*.json ./
-RUN npm install --omit=dev
+RUN npm install --production
 
-# копируем build + prisma runtime
-COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
-COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
-COPY --from=builder /app/prisma ./prisma
+COPY --from=build /app/dist ./dist
+COPY --from=build /app/prisma/__generated__ ./prisma/__generated__
 
-# порт
-EXPOSE 3000
-
-# запуск
-CMD ["node", "dist/main.js"]
+CMD ["node", "dist/main"]
