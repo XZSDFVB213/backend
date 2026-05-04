@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unsafe-call */
-import { IsPhoneNumber, IsString } from 'class-validator';
+import { IsPhoneNumber, IsString, IsBoolean } from 'class-validator';
 
 export class RegisterDto {
   @IsString({ message: 'Имя должно быть строкой' })
@@ -8,4 +8,8 @@ export class RegisterDto {
   phone!: string;
   @IsString({ message: 'Пароль должен быть строкой' })
   password!: string;
+  @IsBoolean()
+  agree!: boolean;
+  @IsBoolean()
+  acceptedPolicy!: boolean;
 }

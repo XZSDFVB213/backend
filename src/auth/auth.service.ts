@@ -51,6 +51,8 @@ export class AuthService {
         phone: dto.phone,
         name: dto.name,
         password: hash,
+        acceptedPolicy: dto.acceptedPolicy,
+        acceptedTerms: dto.agree,
       },
     });
     const { password, ...result } = user;
