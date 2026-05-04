@@ -14,7 +14,7 @@ model User {
   password       String
   acceptedPolicy Boolean    @default(false)
   acceptedTerms  Boolean    @default(false)
-  acceptedAt     DateTime?
+  acceptedAtTime     DateTime?
   createdAt      DateTime   @default(now())
   orders         Order[]
   favorites      Favorite[]
