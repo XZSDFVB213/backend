@@ -53,6 +53,7 @@ export class AuthService {
         password: hash,
         acceptedPolicy: dto.acceptedPolicy,
         acceptedTerms: dto.agree,
+        city: dto.city,
       },
     });
     const { password, ...result } = user;

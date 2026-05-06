@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-call */
-import { IsPhoneNumber, IsString, IsBoolean } from 'class-validator';
+import { City } from '@prisma/client';
+import { IsPhoneNumber, IsString, IsBoolean, IsEnum } from 'class-validator';
 
 export class RegisterDto {
   @IsString({ message: 'Имя должно быть строкой' })
@@ -12,4 +13,6 @@ export class RegisterDto {
   agree!: boolean;
   @IsBoolean()
   acceptedPolicy!: boolean;
+  @IsEnum([City])
+  city!: City;
 }

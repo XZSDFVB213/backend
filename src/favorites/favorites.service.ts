@@ -5,19 +5,19 @@ import { PrismaService } from 'src/prisma/prisma.service';
 export class FavoritesService {
   constructor(private prisma: PrismaService) {}
   async addToFavorite(userId: string, productId: string) {
-    return this.prisma.favorite.upsert({
-      where: {
-        userId_productId: {
-          userId,
-          productId,
-        },
-      },
-      create: {
-        userId,
-        productId,
-      },
-      update: {},
+    const existing = await this.prisma.favorite.findUnique({
+      where: { userId_productId: { userId, productId } },
     });
+
+    if (existing) {
+      return { success: true, alreadyExists: true, message: 'already_exists' };
+    }
+
+    const favorite = await this.prisma.favorite.create({
+      data: { userId, productId },
+    });
+
+    return { success: true, alreadyExists: false, favorite };
   }
   async removeFromFavorites(userId: string, favoriteId: string) {
     return this.prisma.favorite.delete({
