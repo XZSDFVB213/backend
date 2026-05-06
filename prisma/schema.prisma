@@ -12,6 +12,7 @@ model User {
   name           String
   phone          String?    @unique
   password       String
+  city           City       @default(Derbent)
   acceptedPolicy Boolean?   @default(false)
   acceptedTerms  Boolean?   @default(false)
   acceptedAt     DateTime?
@@ -94,4 +95,12 @@ enum Popularity {
   B
   C // средний
   D // слабый
+}
+
+enum City {
+  Derbent
+  Madjalis
+  Makhachkala
+  Kaspiysk
+  Izberbash
 }
