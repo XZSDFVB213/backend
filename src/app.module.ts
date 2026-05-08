@@ -6,6 +6,7 @@ import { UserModule } from './user/user.module';
 import { ProductModule } from './product/product.module';
 import { OrdersModule } from './orders/orders.module';
 import { FavoritesModule } from './favorites/favorites.module';
+import { NotificationModule } from './notification/notification.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { FavoritesModule } from './favorites/favorites.module';
     ProductModule,
     OrdersModule,
     FavoritesModule,
+    NotificationModule,
   ],
   controllers: [AppController],
   providers: [AppService],

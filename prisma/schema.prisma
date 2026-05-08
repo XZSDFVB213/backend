@@ -8,17 +8,18 @@ datasource db {
 }
 
 model User {
-  id             String     @id @default(uuid())
+  id             String         @id @default(uuid())
   name           String
-  phone          String?    @unique
+  phone          String?        @unique
   password       String
-  city           City       @default(Derbent)
-  acceptedPolicy Boolean?   @default(false)
-  acceptedTerms  Boolean?   @default(false)
+  city           City           @default(Derbent)
+  acceptedPolicy Boolean?       @default(false)
+  acceptedTerms  Boolean?       @default(false)
   acceptedAt     DateTime?
-  createdAt      DateTime   @default(now())
+  createdAt      DateTime       @default(now())
   orders         Order[]
   favorites      Favorite[]
+  notifications  Notification[]
 }
 
 model Product {
@@ -75,6 +76,22 @@ model Delivery {
   status    DeliveryStatus @default(READY)
   createdAt DateTime       @default(now())
   order     Order          @relation(fields: [orderId], references: [id])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  type      String // 'order', 'promo', 'system', 'favorite' и т.д.
+  title     String
+  message   String
+  isRead    Boolean  @default(false)
+  data      Json? // для дополнительных данных (orderId, productId и т.д.)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([userId, isRead])
 }
 
 enum OrderStatus {
