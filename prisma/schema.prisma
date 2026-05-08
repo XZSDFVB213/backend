@@ -117,7 +117,9 @@ enum Popularity {
 enum City {
   Derbent
   Madjalis
-  Makhachkala
+  Dagestanskie_Ogni
+  Kasumkent
+  Belidzhi
   Kaspiysk
   Izberbash
 }
