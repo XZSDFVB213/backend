@@ -25,6 +25,7 @@ export class AuthService {
     });
 
     if (!user) {
+      console.log(`⚠️ Пользователь с номером ${dto.phone} не найден`);
       return { message: 'Если аккаунт существует, вам отправлен SMS-код' };
     }
 
@@ -40,20 +41,16 @@ export class AuthService {
       },
     });
 
-    // ←←←←←←←←←←←←←←←←←←←←←←←←←←←
-    console.log('\n🔥🔥🔥 КОД ДЛЯ СБРОСА ПАРОЛЯ 🔥🔥🔥');
+    // Вывод кода в консоль
+    console.log('\n🔥🔥🔥 КОД ДЛЯ СБРОСА 🔥🔥🔥');
     console.log(`📱 Телефон: ${dto.phone}`);
     console.log(`🔢 Код: ${resetCode}`);
-    console.log(`⏰ Действует 15 минут`);
-    console.log('🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥\n');
+    console.log('🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥\n');
 
-    // Отправляем SMS
     const sent = await this.smsService.sendResetCode(user.phone!, resetCode);
 
     if (!sent) {
-      console.warn(`⚠️ Не удалось отправить SMS на ${dto.phone}`);
-      // На время тестирования можно закомментировать throw
-      // throw new BadRequestException('Не удалось отправить SMS');
+      console.warn('⚠️ SMS не был отправлен');
     }
 
     return {

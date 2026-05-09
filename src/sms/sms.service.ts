@@ -12,24 +12,17 @@ export class SmsService {
   private readonly apiUrl = 'https://api.socialniy.ru/';
 
   constructor(private configService: ConfigService) {}
-  private normalizePhone(phone: string): string {
-    // Убираем все нецифровые символы
-    let cleaned = phone.replace(/\D/g, '');
 
-    // Если начинается с 8, меняем на 7
-    if (cleaned.startsWith('8') && cleaned.length === 11) {
-      cleaned = '7' + cleaned.slice(1);
-    }
-
-    // Если номер без кода страны и 10 цифр — добавляем 7
-    if (cleaned.length === 10) {
-      cleaned = '7' + cleaned;
-    }
-
-    return cleaned;
-  }
   async sendResetCode(phone: string, code: string): Promise<boolean> {
-    const text = `Ваш код для сброса пароля: ${code}. Действует 15 минут. Не передавайте его третьим лицам.`;
+    // Убираем возможный '+' в начале
+    let cleanPhone = phone.replace('+', '');
+
+    // Если начинается с 8 → меняем на 7
+    if (cleanPhone.startsWith('8') && cleanPhone.length === 11) {
+      cleanPhone = '7' + cleanPhone.slice(1);
+    }
+
+    const text = `Ваш код для сброса пароля: ${code}. Действует 15 минут.`;
 
     try {
       const params = {
@@ -37,27 +30,26 @@ export class SmsService {
         email: this.configService.get<string>('SMS_EMAIL'),
         password: this.configService.get<string>('SMS_PASSWORD'),
         text: text,
-        phone: this.normalizePhone(phone), // ← рекомендуется добавить
+        phone: cleanPhone,
         sender_name: this.configService.get<string>('SMS_SENDER_NAME'),
       };
 
+      console.log(`📤 Отправка SMS на номер: ${cleanPhone}`); // ← для отладки
+
       const response = await axios.get(this.apiUrl, { params });
 
-      this.logger.log(`SMS sent successfully to ${phone}`);
+      console.log('📥 Ответ от SMS API:', response.data);
 
-      // Проверка ответа API
       if (response.data?.response?.msg?.err_code === 0) {
+        console.log(`✅ SMS успешно отправлен на ${cleanPhone}`);
         return true;
       } else {
-        this.logger.warn('SMS API returned error:', response.data);
+        console.warn('❌ SMS API вернул ошибку:', response.data);
         return false;
       }
     } catch (error: any) {
-      const errorMsg = error?.response?.data
-        ? JSON.stringify(error.response.data)
-        : error?.message || String(error);
-
-      this.logger.error(`Failed to send SMS to ${phone}`, errorMsg);
+      console.error('❌ Ошибка при отправке SMS:');
+      console.error(error?.response?.data || error.message);
       return false;
     }
   }
