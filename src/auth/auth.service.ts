@@ -40,11 +40,20 @@ export class AuthService {
       },
     });
 
+    // ←←←←←←←←←←←←←←←←←←←←←←←←←←←
+    console.log('\n🔥🔥🔥 КОД ДЛЯ СБРОСА ПАРОЛЯ 🔥🔥🔥');
+    console.log(`📱 Телефон: ${dto.phone}`);
+    console.log(`🔢 Код: ${resetCode}`);
+    console.log(`⏰ Действует 15 минут`);
+    console.log('🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥\n');
+
     // Отправляем SMS
     const sent = await this.smsService.sendResetCode(user.phone!, resetCode);
 
     if (!sent) {
-      throw new BadRequestException('Не удалось отправить SMS');
+      console.warn(`⚠️ Не удалось отправить SMS на ${dto.phone}`);
+      // На время тестирования можно закомментировать throw
+      // throw new BadRequestException('Не удалось отправить SMS');
     }
 
     return {
