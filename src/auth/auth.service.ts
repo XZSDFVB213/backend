@@ -9,12 +9,79 @@ import { JwtService } from '@nestjs/jwt';
 import { RegisterDto } from './dto/register.dto';
 import * as bcrypt from 'bcrypt';
 import { LoginDto } from './dto/login.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
+import { RequestResetDto } from './dto/request-reset.dto';
+import { SmsService } from 'src/sms/sms.service';
 @Injectable()
 export class AuthService {
   constructor(
     private prisma: PrismaService,
     private jwt: JwtService,
+    private smsService: SmsService,
   ) {}
+  async requestPasswordReset(dto: RequestResetDto) {
+    const user = await this.prisma.user.findUnique({
+      where: { phone: dto.phone },
+    });
+
+    if (!user) {
+      return { message: 'Если аккаунт существует, вам отправлен SMS-код' };
+    }
+
+    const resetCode = Math.floor(1000 + Math.random() * 9000).toString();
+
+    const hashedCode = await bcrypt.hash(resetCode, 10);
+
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: {
+        resetCode: hashedCode,
+        resetCodeExpires: new Date(Date.now() + 15 * 60 * 1000),
+      },
+    });
+
+    // Отправляем SMS
+    const sent = await this.smsService.sendResetCode(user.phone!, resetCode);
+
+    if (!sent) {
+      throw new BadRequestException('Не удалось отправить SMS');
+    }
+
+    return {
+      message: 'SMS с кодом отправлен на ваш номер телефона',
+    };
+  }
+
+  // ==================== СБРОС ПАРОЛЯ ====================
+  async resetPassword(dto: ResetPasswordDto) {
+    const user = await this.prisma.user.findFirst({
+      where: {
+        resetCodeExpires: { gt: new Date() },
+      },
+    });
+
+    if (!user?.resetCode) {
+      throw new BadRequestException('Код недействителен или истёк');
+    }
+
+    const isValid = await bcrypt.compare(dto.code, user.resetCode);
+    if (!isValid) {
+      throw new BadRequestException('Неверный код');
+    }
+
+    const newHash = await bcrypt.hash(dto.newPassword, 10);
+
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: {
+        password: newHash,
+        resetCode: null,
+        resetCodeExpires: null,
+      },
+    });
+
+    return { message: 'Пароль успешно изменён' };
+  }
   async login(dto: LoginDto) {
     const user = await this.prisma.user.findUnique({
       where: {
