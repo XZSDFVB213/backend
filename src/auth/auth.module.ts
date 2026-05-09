@@ -7,6 +7,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { JwtModule } from '@nestjs/jwt';
 import { JwtStrategy } from './jwt/jwt.strategy';
 import { SmsService } from 'src/sms/sms.service';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 
 @Module({
   imports: [
@@ -16,8 +17,15 @@ import { SmsService } from 'src/sms/sms.service';
         expiresIn: '7d',
       },
     }),
+    ConfigModule.forRoot({ isGlobal: true }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, PrismaService, JwtStrategy, SmsService],
+  providers: [
+    AuthService,
+    PrismaService,
+    JwtStrategy,
+    SmsService,
+    ConfigService,
+  ],
 })
 export class AuthModule {}
