@@ -17,6 +17,12 @@ import type { Request } from 'express';
 export class FavoritesController {
   constructor(private readonly favoritesService: FavoritesService) {}
   @UseGuards(JwtAuthGuard)
+  @Get('count')
+  getFavoriteCount(@Req() req: Request) {
+    const userId: string = (req.user as { id: string }).id;
+    return this.favoritesService.getFavoriteCount(userId);
+  }
+  @UseGuards(JwtAuthGuard)
   @Post(':productId')
   addToFavorite(@Param('productId') productId: string, @Req() req: Request) {
     const userId: string = (req.user as { id: string }).id;

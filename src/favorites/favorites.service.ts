@@ -35,4 +35,9 @@ export class FavoritesService {
       },
     });
   }
+  async getFavoriteCount(userId: string) {
+    return this.prisma.favorite.count({
+      where: { userId },
+    });
+  }
 }
