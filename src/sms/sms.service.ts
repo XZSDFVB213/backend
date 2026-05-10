@@ -14,12 +14,12 @@ export class MailService {
 
   constructor(private configService: ConfigService) {
     this.transporter = nodemailer.createTransport({
-      host: 'smtp.yandex.ru',
-      port: 587,
+      host: process.env.SMTP_HOST,
+      port: Number(process.env.SMTP_PORT),
       secure: false,
       auth: {
-        user: this.configService.get<string>('SMTP_EMAIL'),
-        pass: this.configService.get<string>('SMTP_PASSWORD'),
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASSWORD,
       },
       tls: {
         rejectUnauthorized: false,
@@ -32,10 +32,6 @@ export class MailService {
 
   async sendResetCode(to: string, code: string): Promise<boolean> {
     try {
-      console.log(
-        this.configService.get<string>('SMTP_EMAIL'),
-        this.configService.get<string>('SMTP_PASSWORD'),
-      );
       const info = await this.transporter.sendMail({
         from: `"Socialniy Store" <${this.configService.get<string>('SMTP_EMAIL')}>`,
         to,
