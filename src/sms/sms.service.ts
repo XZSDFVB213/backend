@@ -1,43 +1,56 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
-import { Injectable } from '@nestjs/common';
+// src/mail/mail.service.ts
+import { Injectable, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import * as nodemailer from 'nodemailer';
 
 @Injectable()
 export class MailService {
-  private transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST!,
-    port: Number(process.env.SMTP_PORT!),
-    secure: true,
-    auth: {
-      user: process.env.SMTP_EMAIL!,
-      pass: process.env.SMTP_PASSWORD!,
-    },
-  });
+  private readonly logger = new Logger(MailService.name);
+  private transporter: nodemailer.Transporter;
 
-  async sendMail(to: string, subject: string, html: string): Promise<boolean> {
-    const mail = await this.transporter.sendMail({
-      from: `"Социальный" <${process.env.SMTP_EMAIL!}>`,
-      to,
-      subject,
-      html,
+  constructor(private configService: ConfigService) {
+    this.transporter = nodemailer.createTransport({
+      host: 'smtp.yandex.ru', // или smtp.yandex.com
+      port: 465,
+      secure: true, // true для 465, false для 587
+      auth: {
+        user: this.configService.get<string>('SMTP_EMAIL'),
+        pass: this.configService.get<string>('SMTP_PASSWORD'),
+      },
+      // Дополнительные параметры для стабильности
+      connectionTimeout: 10000,
+      greetingTimeout: 10000,
+      socketTimeout: 15000,
     });
-
-    return !!mail.messageId;
   }
 
-  async sendResetCode(email: string, code: string): Promise<boolean> {
-    return this.sendMail(
-      email,
-      'Сброс пароля',
-      `
-      <div style="font-family:sans-serif">
-        <h2>Код восстановления</h2>
-        <h1>${code}</h1>
-        <p>Код действует 5 минут</p>
-      </div>
-      `,
-    );
+  async sendResetCode(to: string, code: string): Promise<boolean> {
+    const html = `
+      <h2>Сброс пароля</h2>
+      <p>Ваш код для сброса пароля: <strong>${code}</strong></p>
+      <p>Код действует 15 минут.</p>
+      <p>Если вы не запрашивали сброс — проигнорируйте это письмо.</p>
+    `;
+
+    try {
+      const info = await this.transporter.sendMail({
+        from: `"Ваш Магазин" <${this.configService.get<string>('SMTP_EMAIL')}>`,
+        to,
+        subject: 'Код для сброса пароля',
+        html,
+      });
+
+      this.logger.log(
+        `✅ Письмо отправлено на ${to} | MessageId: ${info.messageId}`,
+      );
+      return true;
+    } catch (error: any) {
+      this.logger.error('❌ Ошибка отправки email:', error.message);
+      if (error.code) this.logger.error('Код ошибки:', error.code);
+      return false;
+    }
   }
 }
