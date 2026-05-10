@@ -23,7 +23,7 @@ export class MailService {
       port: 587,
       secure: false,
       auth: {
-        user: this.configService.get<string>('SMTP_EMAIL'),
+        user: this.configService.get<string>('SMTP_USER'),
         pass: this.configService.get<string>('SMTP_PASSWORD'),
       },
     });
