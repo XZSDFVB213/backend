@@ -14,22 +14,23 @@ export class MailService {
 
   constructor(private configService: ConfigService) {
     this.transporter = nodemailer.createTransport({
-      host: this.configService.get<string>('SMTP_HOST'),
-      port: this.configService.get<number>('SMTP_PORT'),
-      secure: false, // для 587
+      host: 'smtp.gmail.com',
+      port: 587,
+      secure: false, // важно!
+      requireTLS: true,
       auth: {
         user: this.configService.get<string>('SMTP_USER'),
         pass: this.configService.get<string>('SMTP_PASSWORD'),
       },
       tls: {
-        rejectUnauthorized: false,
+        rejectUnauthorized: false, // временно, для теста
+        ciphers: 'SSLv3 TLSv1.2', // можно попробовать
       },
-      // Увеличенные таймауты специально для Docker
-      connectionTimeout: 30000,
-      greetingTimeout: 30000,
-      socketTimeout: 30000,
-      debug: true, // ← включил debug
-      logger: true, // ← логи nodemailer
+      connectionTimeout: 45000,
+      greetingTimeout: 45000,
+      socketTimeout: 45000,
+      debug: true,
+      logger: true,
     });
   }
 
