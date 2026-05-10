@@ -23,8 +23,8 @@ export class MailService {
       port: 587,
       secure: false,
       auth: {
-        user: this.configService.get<string>('SMTP_USER'),
-        pass: this.configService.get<string>('SMTP_PASSWORD'),
+        user: 'abakarmadatov2@gmail.com',
+        pass: 'kbzwdjnhdivypgkk',
       },
     });
   }
@@ -50,11 +50,11 @@ export class MailService {
     } catch (error: any) {
       this.logger.error('❌ Ошибка отправки email:');
       this.logger.error('Сообщение:', error.message);
+      this.logger.error('Код:', error.code);
       console.log(
         this.configService.get<string>('SMTP_USER'),
         this.configService.get<string>('SMTP_PASSWORD'),
       );
-      this.logger.error('Код:', error.code);
       this.logger.error('Команда:', error.command);
       return false;
     }
