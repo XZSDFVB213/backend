@@ -30,26 +30,14 @@ export class MailService {
     });
   }
 
-  async sendResetCode(to: string, code: string): Promise<boolean> {
-    try {
-      const info = await this.transporter.sendMail({
-        from: `"Socialniy Store" <${this.configService.get<string>('SMTP_EMAIL')}>`,
-        to,
-        subject: 'Код для сброса пароля',
-        html: `
-          <h2>Восстановление пароля</h2>
-          <p>Ваш код: <b>${code}</b></p>
-          <p>Код действителен 15 минут.</p>
-          <p>Если вы не запрашивали сброс пароля — проигнорируйте это письмо.</p>
-        `,
-      });
+  sendResetCode(to: string, code: string): boolean {
+    this.logger.log(`\n📧 === СИМУЛЯЦИЯ ОТПРАВКИ ПИСЬМА ===`);
+    this.logger.log(`Кому: ${to}`);
+    this.logger.log(`Код: ${code}`);
+    this.logger.log(`Тема: Код для сброса пароля`);
+    this.logger.log(`===================================\n`);
 
-      this.logger.log(`✅ Письмо успешно отправлено на ${to}`);
-      return true;
-    } catch (error: any) {
-      this.logger.error('❌ Ошибка отправки email:', error.message);
-      this.logger.error('Код ошибки:', error.code);
-      return false;
-    }
+    // Временно всегда возвращаем успех
+    return true;
   }
 }
