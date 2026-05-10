@@ -7,6 +7,7 @@ import { ProductModule } from './product/product.module';
 import { OrdersModule } from './orders/orders.module';
 import { FavoritesModule } from './favorites/favorites.module';
 import { NotificationModule } from './notification/notification.module';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
@@ -16,6 +17,9 @@ import { NotificationModule } from './notification/notification.module';
     OrdersModule,
     FavoritesModule,
     NotificationModule,
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
   ],
   controllers: [AppController],
   providers: [AppService],
