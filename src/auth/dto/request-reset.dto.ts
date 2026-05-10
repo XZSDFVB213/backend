@@ -1,7 +1,7 @@
-import { IsPhoneNumber, IsNotEmpty } from 'class-validator';
+import { IsNotEmpty, IsEmail } from 'class-validator';
 
 export class RequestResetDto {
-  @IsPhoneNumber('RU') // измени под свою страну при необходимости
+  @IsEmail() // измени под свою страну при необходимости
   @IsNotEmpty()
-  phone!: string;
+  email!: string;
 }

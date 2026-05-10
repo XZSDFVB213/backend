@@ -1,6 +1,10 @@
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-import { IsPhoneNumber, IsString, IsBoolean, IsEnum } from 'class-validator';
+import {
+  IsPhoneNumber,
+  IsString,
+  IsBoolean,
+  IsEnum,
+  IsEmail,
+} from 'class-validator';
 import { City } from '@prisma/client'; // ← должен работать после prisma generate
 
 export class RegisterDto {
@@ -21,4 +25,7 @@ export class RegisterDto {
 
   @IsEnum(City) // ← исправь вот так
   city!: City;
+
+  @IsEmail()
+  email!: string;
 }

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-call */
 import { IsPhoneNumber, IsString } from 'class-validator';
 export class LoginDto {
   @IsPhoneNumber()
