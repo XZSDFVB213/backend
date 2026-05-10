@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unnecessary-type-assertion */
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { JwtService } from '@nestjs/jwt';
 import { RegisterDto } from './dto/register.dto';
@@ -12,10 +12,11 @@ import { RequestResetDto } from './dto/request-reset.dto';
 import { MailService } from 'src/sms/sms.service';
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
   constructor(
     private prisma: PrismaService,
     private jwt: JwtService,
-    private smsService: MailService,
+    private mailService: MailService,
   ) {}
   async requestPasswordReset(dto: RequestResetDto) {
     const user = await this.prisma.user.findUnique({
@@ -23,12 +24,12 @@ export class AuthService {
     });
 
     if (!user) {
-      console.log(`⚠️ Пользователь с номером ${dto.email} не найден`);
-      return { message: 'Если аккаунт существует, вам отправлен SMS-код' };
+      return {
+        message: 'Если аккаунт существует, на вашу почту отправлен код',
+      };
     }
 
     const resetCode = Math.floor(1000 + Math.random() * 9000).toString();
-
     const hashedCode = await bcrypt.hash(resetCode, 10);
 
     await this.prisma.user.update({
@@ -39,40 +40,35 @@ export class AuthService {
       },
     });
 
-    // Вывод кода в консоль
-    console.log('\n🔥🔥🔥 КОД ДЛЯ СБРОСА 🔥🔥🔥');
-    console.log(`📱 Почта: ${dto.email}`);
-    console.log('🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥\n');
+    // Логи для разработки
+    this.logger.log(`🔑 Код сброса для ${dto.email}: ${resetCode}`);
 
-    const sent = await this.smsService.sendResetCode(user.email!, resetCode);
+    // Отправка письма
+    const sent = await this.mailService.sendResetCode(user.email!, resetCode);
 
     if (!sent) {
-      console.warn('⚠️ SMS не был отправлен');
+      this.logger.warn(`Не удалось отправить письмо на ${dto.email}`);
     }
 
     return {
-      message: 'SMS с кодом отправлен на ваш номер телефона',
+      message: 'Код для сброса пароля отправлен на вашу почту',
     };
   }
 
-  // ==================== СБРОС ПАРОЛЯ ====================
   async resetPassword(dto: ResetPasswordDto) {
     const user = await this.prisma.user.findUnique({
-      where: {
-        email: dto.email,
-      },
+      where: { email: dto.email },
     });
 
-    if (!user?.resetCode) {
+    if (!user?.resetCode || !user.resetCodeExpires) {
       throw new BadRequestException('Код недействителен или истёк');
     }
 
-    if (!user.resetCodeExpires || user.resetCodeExpires < new Date()) {
+    if (user.resetCodeExpires < new Date()) {
       throw new BadRequestException('Код истёк');
     }
 
     const isValid = await bcrypt.compare(dto.code, user.resetCode);
-
     if (!isValid) {
       throw new BadRequestException('Неверный код');
     }
@@ -80,9 +76,7 @@ export class AuthService {
     const newHash = await bcrypt.hash(dto.newPassword, 10);
 
     await this.prisma.user.update({
-      where: {
-        id: user.id,
-      },
+      where: { id: user.id },
       data: {
         password: newHash,
         resetCode: null,
@@ -90,9 +84,7 @@ export class AuthService {
       },
     });
 
-    return {
-      message: 'Пароль успешно изменён',
-    };
+    return { message: 'Пароль успешно изменён' };
   }
   async login(dto: LoginDto) {
     const user = await this.prisma.user.findUnique({
