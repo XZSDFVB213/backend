@@ -50,6 +50,10 @@ export class MailService {
     } catch (error: any) {
       this.logger.error('❌ Ошибка отправки email:');
       this.logger.error('Сообщение:', error.message);
+      console.log(
+        this.configService.get<string>('SMTP_USER'),
+        this.configService.get<string>('SMTP_PASSWORD'),
+      );
       this.logger.error('Код:', error.code);
       this.logger.error('Команда:', error.command);
       return false;
