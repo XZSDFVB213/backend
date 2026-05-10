@@ -16,21 +16,14 @@ export class MailService {
     this.transporter = nodemailer.createTransport({
       host: 'smtp.gmail.com',
       port: 587,
-      secure: false, // важно!
+      secure: false,
       requireTLS: true,
-      auth: {
-        user: this.configService.get<string>('SMTP_USER'),
-        pass: this.configService.get<string>('SMTP_PASSWORD'),
-      },
-      tls: {
-        rejectUnauthorized: false, // временно, для теста
-        ciphers: 'SSLv3 TLSv1.2', // можно попробовать
-      },
-      connectionTimeout: 45000,
-      greetingTimeout: 45000,
-      socketTimeout: 45000,
-      debug: true,
       logger: true,
+      debug: true,
+      auth: {
+        user: process.env.MAIL_ADRESS,
+        pass: process.env.MAIL_PASSWORD,
+      },
     });
   }
 
