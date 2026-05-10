@@ -14,15 +14,14 @@ export class MailService {
 
   constructor(private configService: ConfigService) {
     this.transporter = nodemailer.createTransport({
-      host: 'smtp.gmail.com',
-      port: 587,
+      host: 'smtp.msndr.net',
+      port: 25,
       secure: false,
-      requireTLS: true,
       logger: true,
       debug: true,
       auth: {
-        user: process.env.MAIL_ADRESS,
-        pass: process.env.MAIL_PASSWORD,
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASSWORD,
       },
     });
   }
