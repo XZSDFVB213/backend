@@ -40,18 +40,24 @@ export class AuthService {
       },
     });
 
-    // Логи для разработки
     this.logger.log(`🔑 Код сброса для ${dto.email}: ${resetCode}`);
 
-    // Отправка письма
-    const sent = await this.mailService.sendResetCode(user.email!, resetCode);
-
-    if (!sent) {
-      this.logger.warn(`Не удалось отправить письмо на ${dto.email}`);
-    }
+    // ←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+    // Отправляем письмо в фоне, не ждём ответа
+    this.mailService
+      .sendResetCode(user.email!, resetCode)
+      .then((sent) => {
+        if (!sent) {
+          this.logger.warn(`Не удалось отправить письмо на ${dto.email}`);
+        }
+      })
+      .catch((err) => {
+        this.logger.error(`Ошибка при отправке письма ${dto.email}:`, err);
+      });
+    // ←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
 
     return {
-      message: 'Код для сброса пароля отправлен на вашу почту',
+      message: 'Если аккаунт существует, на вашу почту отправлен код',
     };
   }
 

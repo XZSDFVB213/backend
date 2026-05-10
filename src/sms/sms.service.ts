@@ -23,8 +23,8 @@ export class MailService {
       port: 465,
       secure: true,
       auth: {
-        user: 'abakarmadatov2@gmail.com',
-        pass: 'kbzwdjnhdivypgkk',
+        user: this.configService.get<string>('SMTP_USER'),
+        pass: this.configService.get<string>('SMTP_PASSWORD'),
       },
     });
   }
