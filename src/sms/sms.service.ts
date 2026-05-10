@@ -10,17 +10,20 @@ import * as nodemailer from 'nodemailer';
 @Injectable()
 export class MailService {
   private readonly logger = new Logger(MailService.name);
-  private transporter: nodemailer.Transporter;
 
+  private transporter!: nodemailer.Transporter;
   constructor(private configService: ConfigService) {
+    this.initTransporter();
+  }
+
+  private initTransporter() {
     this.transporter = nodemailer.createTransport({
-      host: 'smtp.msndr.net',
-      port: 25,
+      service: 'gmail',
+      host: 'smtp.gmail.com',
+      port: 587,
       secure: false,
-      logger: true,
-      debug: true,
       auth: {
-        user: process.env.SMTP_USER,
+        user: process.env.SMTP_EMAIL,
         pass: process.env.SMTP_PASSWORD,
       },
     });
