@@ -119,10 +119,13 @@ export class AuthService {
         phone: dto.phone,
       },
     });
+
     if (existing) {
-      throw new Error('User already exists');
+      throw new BadRequestException('User already exists');
     }
+
     const hash = await bcrypt.hash(dto.password, 5);
+
     const user = await this.prisma.user.create({
       data: {
         phone: dto.phone,
@@ -134,7 +137,17 @@ export class AuthService {
         city: dto.city,
       },
     });
-    const { password, ...result } = user;
-    return result;
+
+    // 🔥 генерируем JWT сразу после регистрации
+    const token = this.jwt.sign({
+      id: user.id,
+    });
+
+    const { password, ...safeUser } = user;
+
+    return {
+      token,
+      user: safeUser,
+    };
   }
 }
