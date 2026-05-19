@@ -1,7 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-/* eslint-disable @typescript-eslint/no-unsafe-return */
 import {
   Controller,
   Get,
@@ -19,6 +17,7 @@ import { JwtAuthGuard } from 'src/auth/jwt/jwt.guard';
 import { NotificationService } from './notification.service';
 import { CreateNotificationDto } from './dto/create-notification.dto';
 import { SendVerificationDto } from './dto/send-notification.dto';
+import { VerifyCodeDto } from './dto/veryfy.dto';
 @Controller('notifications')
 export class NotificationsController {
   constructor(private notificationsService: NotificationService) {}
@@ -44,6 +43,10 @@ export class NotificationsController {
     }
 
     return this.notificationsService.sendVerificationCode(dto.phone);
+  }
+  @Post('verification/verify')
+  verify(@Body() dto: VerifyCodeDto) {
+    return this.notificationsService.verifyCode(dto);
   }
   @Post('broadcast')
   @UseGuards(JwtAuthGuard)

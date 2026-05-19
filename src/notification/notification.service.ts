@@ -1,10 +1,8 @@
-/* eslint-disable @typescript-eslint/no-unsafe-return */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-call */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { Injectable } from '@nestjs/common';
 import { CreateNotificationDto } from './dto/create-notification.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { VerifyCodeDto } from './dto/veryfy.dto';
 
 @Injectable()
 export class NotificationService {
@@ -120,5 +118,45 @@ export class NotificationService {
         expiresAt: new Date(Date.now() + 5 * 60 * 1000),
       },
     });
+  }
+  async verifyCode(dto: VerifyCodeDto) {
+    const { phone, code } = dto;
+    const user = await this.prisma.user.findUnique({
+      where: { phone },
+    });
+    if (!user) {
+      return { verified: false };
+    }
+    // 1. найти код
+    const notification = await this.prisma.notification.findFirst({
+      where: {
+        userId: user.id,
+        type: 'verification',
+        data: {
+          path: ['code'],
+          equals: code,
+        },
+      },
+    });
+
+    if (!notification) {
+      return { verified: false };
+    }
+    const now = new Date();
+
+    const active =
+      user.subscriptionExpiresAt && user.subscriptionExpiresAt > now;
+
+    return {
+      verified: true,
+      user: {
+        id: user.id,
+        phone: user.phone,
+      },
+      subscription: {
+        active,
+        expiresAt: user.subscriptionExpiresAt ?? null,
+      },
+    };
   }
 }

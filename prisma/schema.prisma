@@ -8,14 +8,15 @@ datasource db {
 }
 
 model User {
-  id               String         @id @default(uuid())
-  name             String
-  phone            String?        @unique
-  email            String?        @unique
-  password         String
-  city             City           @default(Derbent)
-  acceptedPolicy   Boolean?       @default(false)
-  acceptedTerms    Boolean?       @default(false)
+  id                    String    @id @default(uuid())
+  name                  String
+  phone                 String?   @unique
+  email                 String?   @unique
+  password              String
+  city                  City      @default(Derbent)
+  acceptedPolicy        Boolean?  @default(false)
+  acceptedTerms         Boolean?  @default(false)
+  subscriptionExpiresAt DateTime?
   resetCode        String? // храним хеш кода
   resetCodeExpires DateTime?
   acceptedAt       DateTime?

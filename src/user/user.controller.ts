@@ -1,11 +1,22 @@
-import { Controller, Get, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Post,
+} from '@nestjs/common';
 import { UserService } from './user.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
-
+  @Post('subscription/activate')
+  activateSubscription(@Body() dto: { phone: string; days: number }) {
+    return this.userService.activateSubscription(dto);
+  }
   @Get()
   findAll() {
     return this.userService.findAll();
