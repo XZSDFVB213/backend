@@ -99,4 +99,26 @@ export class NotificationService {
       skipDuplicates: true,
     });
   }
+  async sendVerificationCode(phone: string) {
+    const user = await this.prisma.user.findFirst({
+      where: { phone },
+    });
+
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    const code = Math.floor(1000 + Math.random() * 9000).toString();
+
+    return this.create(user.id, {
+      type: 'verification',
+      title: 'Код подтверждения',
+      message: 'Покажите код сотруднику',
+
+      data: {
+        code,
+        expiresAt: new Date(Date.now() + 5 * 60 * 1000),
+      },
+    });
+  }
 }
