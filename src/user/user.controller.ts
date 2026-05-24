@@ -6,6 +6,7 @@ import {
   Param,
   Delete,
   Post,
+  Headers,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -14,7 +15,13 @@ import { UpdateUserDto } from './dto/update-user.dto';
 export class UserController {
   constructor(private readonly userService: UserService) {}
   @Post('subscription/activate')
-  activateSubscription(@Body() dto: { phone: string; days: number }) {
+  activateSubscription(
+    @Body() dto: { phone: string; days: number },
+    @Headers('x-staff-key') staffKey: string,
+  ) {
+    if (staffKey !== process.env.STAFF_KEY) {
+      throw new Error('Unauthorized');
+    }
     return this.userService.activateSubscription(dto);
   }
   @Get()

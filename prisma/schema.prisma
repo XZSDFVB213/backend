@@ -17,6 +17,7 @@ model User {
   acceptedPolicy        Boolean?  @default(false)
   acceptedTerms         Boolean?  @default(false)
   subscriptionExpiresAt DateTime?
+  lastDiscountUsedAt    DateTime? // 👈 добавляем
   resetCode        String? // храним хеш кода
   resetCodeExpires DateTime?
   acceptedAt       DateTime?

@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { Injectable } from '@nestjs/common';
 import { CreateNotificationDto } from './dto/create-notification.dto';
@@ -157,6 +159,132 @@ export class NotificationService {
         active,
         expiresAt: user.subscriptionExpiresAt ?? null,
       },
+    };
+  }
+  async sendDiscountCode(phone: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { phone },
+    });
+
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    // подписка неактивна
+    if (
+      !user.subscriptionExpiresAt ||
+      user.subscriptionExpiresAt < new Date()
+    ) {
+      throw new Error('Subscription inactive');
+    }
+
+    // проверка 12 часов
+    if (user.lastDiscountUsedAt) {
+      const diff = Date.now() - new Date(user.lastDiscountUsedAt).getTime();
+
+      const twelveHours = 12 * 60 * 60 * 1000;
+
+      if (diff < twelveHours) {
+        throw new Error('Discount already used');
+      }
+    }
+
+    const code = Math.floor(1000 + Math.random() * 9000).toString();
+
+    return this.create(user.id, {
+      type: 'discount',
+      title: 'Подтверждение скидки',
+      message: 'Покажите код кассиру',
+
+      data: {
+        code,
+        expiresAt: new Date(Date.now() + 5 * 60 * 1000),
+      },
+    });
+  }
+  async verifyDiscountCode(dto: VerifyCodeDto) {
+    const { phone, code } = dto;
+
+    const user = await this.prisma.user.findUnique({
+      where: { phone },
+    });
+
+    if (!user) {
+      return {
+        success: false,
+        message: 'Пользователь не найден',
+      };
+    }
+
+    // подписка
+    if (
+      !user.subscriptionExpiresAt ||
+      user.subscriptionExpiresAt < new Date()
+    ) {
+      return {
+        success: false,
+        message: 'Подписка не активна',
+      };
+    }
+
+    // ограничение 12 часов
+    if (user.lastDiscountUsedAt) {
+      const diff = Date.now() - new Date(user.lastDiscountUsedAt).getTime();
+
+      const twelveHours = 12 * 60 * 60 * 1000;
+
+      if (diff < twelveHours) {
+        return {
+          success: false,
+          message: 'Скидка уже использована',
+        };
+      }
+    }
+
+    // ищем код
+    const notification = await this.prisma.notification.findFirst({
+      where: {
+        userId: user.id,
+        type: 'discount',
+        data: {
+          path: ['code'],
+          equals: code,
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+
+    if (!notification) {
+      return {
+        success: false,
+        message: 'Неверный код',
+      };
+    }
+
+    const data: any = notification.data;
+
+    if (new Date(data.expiresAt) < new Date()) {
+      return {
+        success: false,
+        message: 'Код истек',
+      };
+    }
+
+    // успех
+    await this.prisma.user.update({
+      where: {
+        id: user.id,
+      },
+      data: {
+        lastDiscountUsedAt: new Date(),
+      },
+    });
+
+    return {
+      success: true,
+      discount: 30,
     };
   }
 }

@@ -9,9 +9,7 @@ import {
   UseGuards,
   NotFoundException,
   Post,
-  Headers,
   Body,
-  ForbiddenException,
 } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/auth/jwt/jwt.guard';
 import { NotificationService } from './notification.service';
@@ -32,17 +30,16 @@ export class NotificationsController {
   }
 
   @Post('verification/send')
-  sendVerification(
-    @Body() dto: SendVerificationDto,
-    @Headers('x-staff-key') staffKey: string,
-  ) {
-    if (staffKey !== process.env.STAFF_KEY) {
-      console.log('staffKey:', staffKey);
-      console.log('env:', process.env.STAFF_KEY);
-      throw new ForbiddenException();
-    }
-
+  sendVerification(@Body() dto: SendVerificationDto) {
     return this.notificationsService.sendVerificationCode(dto.phone);
+  }
+  @Post('discount/send')
+  sendDiscount(@Body() dto: SendVerificationDto) {
+    return this.notificationsService.sendDiscountCode(dto.phone);
+  }
+  @Post('discount/verify')
+  verifyDiscount(@Body() dto: VerifyCodeDto) {
+    return this.notificationsService.verifyDiscountCode(dto);
   }
   @Post('verification/verify')
   verify(@Body() dto: VerifyCodeDto) {
