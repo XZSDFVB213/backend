@@ -121,6 +121,14 @@ export class NotificationService {
       },
     });
   }
+  normalizePhone(phone: string) {
+    let cleaned = phone.replace(/\D/g, '');
+
+    if (cleaned.startsWith('8')) cleaned = '7' + cleaned.slice(1);
+    if (!cleaned.startsWith('7')) cleaned = '7' + cleaned;
+
+    return '+' + cleaned;
+  }
   async verifyCode(dto: VerifyCodeDto) {
     const { phone, code } = dto;
     const user = await this.prisma.user.findUnique({
@@ -161,7 +169,8 @@ export class NotificationService {
       },
     };
   }
-  async sendDiscountCode(phone: string) {
+  async sendDiscountCode(phoneUser: string) {
+    const phone = this.normalizePhone(phoneUser);
     const user = await this.prisma.user.findUnique({
       where: { phone },
     });
