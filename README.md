@@ -96,3 +96,143 @@ Nest is an MIT-licensed open source project. It can grow thanks to the sponsors 
 ## License
 
 Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+
+
+# Интеграция Frontol с системой подписок
+
+## Базовый URL
+
+```text
+https://api.socialniy.ru
+```
+
+## Проверка подписки
+
+### Отправить код подтверждения
+
+POST /notifications/verification/send
+
+Body:
+
+```json
+{
+  "phone": "+79991234567"
+}
+```
+
+После запроса пользователю в приложение приходит уведомление с 4-значным кодом.
+
+---
+
+### Проверить код и подписку
+
+POST /notifications/verification/verify
+
+Body:
+
+```json
+{
+  "phone": "+79991234567",
+  "code": "1234"
+}
+```
+
+Ответ:
+
+```json
+{
+  "verified": true,
+  "subscription": {
+    "active": true,
+    "expiresAt": "2026-12-31T00:00:00.000Z"
+  }
+}
+```
+
+---
+
+## Применение скидки
+
+### Отправить код на использование скидки
+
+POST /notifications/discount/send
+
+Body:
+
+```json
+{
+  "phone": "+79991234567"
+}
+```
+
+Условия:
+
+* подписка должна быть активна;
+* скидка не должна использоваться чаще одного раза в 12 часов.
+
+После запроса пользователю приходит уведомление с кодом.
+
+---
+
+### Проверить код скидки
+
+POST /notifications/discount/verify
+
+Body:
+
+```json
+{
+  "phone": "+79991234567",
+  "code": "1234"
+}
+```
+
+Успешный ответ:
+
+```json
+{
+  "success": true,
+  "discount": 30
+}
+```
+
+Ответ означает, что можно применить скидку 30%.
+
+Ошибка:
+
+```json
+{
+  "success": false,
+  "message": "Скидка уже использована"
+}
+```
+
+или
+
+```json
+{
+  "success": false,
+  "message": "Подписка не активна"
+}
+```
+
+или
+
+```json
+{
+  "success": false,
+  "message": "Неверный код"
+}
+```
+
+---
+
+## Сценарий работы кассира
+
+1. Кассир вводит номер телефона клиента.
+2. Frontol вызывает `/notifications/discount/send`.
+3. Клиент получает код в приложении.
+4. Кассир вводит код.
+5. Frontol вызывает `/notifications/discount/verify`.
+6. Если `success=true`, применяется скидка 30%.
+7. Если `success=false`, скидка не применяется.
