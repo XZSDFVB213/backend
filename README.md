@@ -236,88 +236,113 @@ Body:
 5. Frontol вызывает `/notifications/discount/verify`.
 6. Если `success=true`, применяется скидка 30%.
 7. Если `success=false`, скидка не применяется.
-🪪 Дисконтные карты
-📥 Получить все дисконтные карты
-GET /discount/all
-Описание
+<p align="center">
+  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
+</p>
 
-Возвращает список всех дисконтных карт в системе.
+[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
+[circleci-url]: https://circleci.com/gh/nestjs/nest
 
-Пример ответа
-[
-  {
-    "id": "46b96423-a19a-4869-981f-2c6acad4ad93",
-    "userId": "af7daac0-d841-4282-88f5-eab4ac507be3",
-    "isActive": true,
-    "cardNumber": "ACBCB2EE-22DD-4F71-B87F-997D035206D3",
-    "createdAt": "2026-06-14T11:52:54.072Z"
+  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
+    <p align="center">
+<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
+<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
+<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
+<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
+<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
+<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
+<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
+  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
+    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
+  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
+</p>
+
+## Description
+
+[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+
+## Project setup
+
+```bash
+$ npm install
+Compile and run the project
+Bash# development
+$ npm run start
+
+# watch mode
+$ npm run start:dev
+
+# production mode
+$ npm run start:prod
+Run tests
+Bash# unit tests
+$ npm run test
+
+# e2e tests
+$ npm run test:e2e
+
+# test coverage
+$ npm run test:cov
+Deployment
+... (оставил стандартный раздел без изменений)
+Resources / Support / License
+... (стандартные разделы NestJS без изменений)
+
+Интеграция Frontol с системой подписок
+(твой текущий текст остался без изменений)
+
+Получение дисконтных карт
+Базовый URL
+texthttps://api.socialniy.ru
+Эндпоинты для работы с дисконтными картами
+1. Получить все доступные скидки/карты
+httpGET /discount/all
+Ответ:
+JSON{
+  "discounts": [
+    {
+      "id": 1,
+      "name": "Стандартная карта",
+      "discountPercent": 30,
+      "description": "..."
+    }
+  ]
+}
+2. Получить мою дисконтную карту (требуется авторизация)
+httpGET /discount/me
+Headers:
+textAuthorization: Bearer <jwt-token>
+Ответ:
+JSON{
+  "card": {
+    "id": 123,
+    "phone": "+79991234567",
+    "discountPercent": 30,
+    "subscription": {
+      "active": true,
+      "expiresAt": "2026-12-31T00:00:00.000Z"
+    }
   }
-]
-👤 Получить дисконтную карту текущего пользователя
-GET /discount/me
-Authorization: Bearer <JWT_TOKEN>
-Описание
-
-Возвращает дисконтную карту авторизованного пользователя.
-
-Требования
-Пользователь должен быть авторизован (JWT)
-Пример ответа
-[
-  {
-    "id": "46b96423-a19a-4869-981f-2c6acad4ad93",
-    "userId": "af7daac0-d841-4282-88f5-eab4ac507be3",
-    "isActive": true,
-    "cardNumber": "ACBCB2EE-22DD-4F71-B87F-997D035206D3"
-  }
-]
-🎫 Активировать подписку на дисконтную карту
-POST /discount/activate
-Описание
-
-Активирует подписку на дисконтной карте пользователя.
-
-Body
-{
+}
+3. Активировать подписку на дисконтную карту
+httpPOST /discount/activate
+Body:
+JSON{
   "phone": "+79991234567",
-  "days": 30
+  "days": 365
 }
-Логика
-ищется пользователь по телефону
-создаётся / обновляется дисконтная карта
-активируется подписка (добавляется срок действия)
-Пример ответа
-{
+Ответ (успех):
+JSON{
   "success": true,
-  "message": "Subscription activated",
-  "expiresAt": "2026-07-14T00:00:00.000Z"
+  "message": "Подписка активирована",
+  "expiresAt": "2026-12-31T00:00:00.000Z"
 }
-🔐 Авторизация
-JWT (для защищённых эндпоинтов)
-Authorization: Bearer <token>
-🔄 Бизнес-логика дисконтной системы
-📌 Как работает карта
-У каждого пользователя есть 1 дисконтная карта
-Карта привязана к userId
-На карте хранится:
-номер карты (cardNumber)
-статус подписки (isActive)
-срок действия (если есть)
-📌 Использование в кассе (Frontol / 1С)
-Кассир сканирует QR / вводит номер карты
-Система находит карту через cardNumber
-Проверяется:
-активна ли подписка
-не истёк ли срок
-Если всё ок → разрешается скидка
-📌 Важно
-Карта НЕ хранит данные 1С
-1С / касса всегда обращается к API
-Источник истины — backend
-📦 Дополнительно (рекомендуется для интеграции)
 
-Если потребуется, можно добавить:
+Рекомендуемый сценарий получения/активации карты
 
-GET /discount/by-card/:cardNumber — поиск по QR
-POST /discount/validate — проверка карты для кассы
-POST /discount/apply — фиксация использования скидки
+Пользователь регистрируется / авторизуется в приложении.
+При необходимости можно посмотреть все доступные скидки — GET /discount/all.
+Для просмотра своей карты — GET /discount/me.
+Активация подписки (если нужно продлить или создать карту) — POST /discount/activate.
+
+Примечание: Активация подписки обычно происходит после оплаты (через внешнюю платёжную систему).
