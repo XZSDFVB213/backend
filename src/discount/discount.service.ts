@@ -13,6 +13,7 @@ export class DiscountService {
     if (!discounts) {
       throw new Error('Discounts not found');
     }
+    return discounts;
   }
   async getDiscount(userId: string) {
     const discount = await this.prisma.discountCard.findUnique({
