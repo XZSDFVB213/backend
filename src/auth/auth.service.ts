@@ -135,6 +135,15 @@ export class AuthService {
         acceptedTerms: dto.agree,
         email: dto.email,
         city: dto.city,
+
+        discountCard: {
+          create: {
+            cardNumber: crypto.randomUUID(),
+          },
+        },
+      },
+      include: {
+        discountCard: true,
       },
     });
 

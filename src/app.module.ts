@@ -9,6 +9,7 @@ import { FavoritesModule } from './favorites/favorites.module';
 import { NotificationModule } from './notification/notification.module';
 import { ConfigModule } from '@nestjs/config';
 import { FrontolModule } from './frontol/frontol.module';
+import { DiscountModule } from './discount/discount.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { FrontolModule } from './frontol/frontol.module';
       isGlobal: true,
     }),
     FrontolModule,
+    DiscountModule,
   ],
   controllers: [AppController],
   providers: [AppService],

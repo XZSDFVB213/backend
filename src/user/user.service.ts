@@ -45,6 +45,7 @@ export class UserService {
   async findOne(id: string) {
     const user = await this.prisma.user.findUniqueOrThrow({
       where: { id },
+      include: { discountCard: true },
     });
 
     const { password, ...safeUser } = user;

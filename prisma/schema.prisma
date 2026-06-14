@@ -8,23 +8,24 @@ datasource db {
 }
 
 model User {
-  id                    String    @id @default(uuid())
+  id                    String        @id @default(uuid())
   name                  String
-  phone                 String?   @unique
-  email                 String?   @unique
+  phone                 String?       @unique
+  email                 String?       @unique
   password              String
-  city                  City      @default(Derbent)
-  acceptedPolicy        Boolean?  @default(false)
-  acceptedTerms         Boolean?  @default(false)
+  city                  City          @default(Derbent)
+  acceptedPolicy        Boolean?      @default(false)
+  acceptedTerms         Boolean?      @default(false)
   subscriptionExpiresAt DateTime?
   lastDiscountUsedAt    DateTime? // 👈 добавляем
-  resetCode        String? // храним хеш кода
-  resetCodeExpires DateTime?
-  acceptedAt       DateTime?
-  createdAt        DateTime       @default(now())
-  orders           Order[]
-  favorites        Favorite[]
-  notifications    Notification[]
+  resetCode             String? // храним хеш кода
+  resetCodeExpires      DateTime?
+  discountCard          DiscountCard?
+  acceptedAt    DateTime?
+  createdAt     DateTime       @default(now())
+  orders        Order[]
+  favorites     Favorite[]
+  notifications Notification[]
 }
 
 model Product {
@@ -97,6 +98,21 @@ model Notification {
 
   @@index([userId])
   @@index([userId, isRead])
+}
+
+model DiscountCard {
+  id         String   @id @default(uuid())
+  cardNumber String   @unique
+  isActive   Boolean  @default(true)
+  lastUsedAt DateTime?
+
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([cardNumber])
 }
 
 enum OrderStatus {
