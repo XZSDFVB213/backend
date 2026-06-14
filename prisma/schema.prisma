@@ -101,16 +101,20 @@ model Notification {
 }
 
 model DiscountCard {
-  id         String   @id @default(uuid())
-  cardNumber String   @unique
-  isActive   Boolean  @default(true)
-  lastUsedAt DateTime?
+  id                    String   @id @default(uuid())
+  cardNumber            String   @unique
 
-  userId String @unique
-  user   User   @relation(fields: [userId], references: [id])
+  isActive              Boolean  @default(true)
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  subscriptionActive    Boolean  @default(false)
+  subscriptionExpiresAt DateTime?
+
+  lastDiscountUsedAt    DateTime?
+
+  userId                String?  @unique
+  user                  User?    @relation(fields: [userId], references: [id])
+
+  createdAt             DateTime @default(now())
 
   @@index([cardNumber])
 }

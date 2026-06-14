@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
@@ -35,5 +35,30 @@ export class DiscountService {
     });
 
     return myCard;
+  }
+  async activateSubscriptionOnCard(phone: string, days: number) {
+    const user = await this.prisma.user.findUnique({
+      where: { phone },
+      include: { discountCard: true },
+    });
+
+    if (!user) {
+      throw new BadRequestException('User not found');
+    }
+
+    if (!user.discountCard) {
+      throw new BadRequestException('Discount card not found');
+    }
+
+    const expires = new Date();
+    expires.setDate(expires.getDate() + days);
+
+    return this.prisma.discountCard.update({
+      where: { id: user.discountCard.id },
+      data: {
+        subscriptionActive: true,
+        subscriptionExpiresAt: expires,
+      },
+    });
   }
 }

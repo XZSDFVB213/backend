@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
-import { Controller, Get, Req, UseGuards } from '@nestjs/common';
+import { Controller, Get, Req, UseGuards, Post, Body } from '@nestjs/common';
 import { DiscountService } from './discount.service';
 import { JwtAuthGuard } from 'src/auth/jwt/jwt.guard';
 
@@ -15,5 +15,9 @@ export class DiscountController {
   @Get('me')
   getMyCard(@Req() req: any) {
     return this.discountService.getMyCard(req.user.id);
+  }
+  @Post('activate')
+  activate(@Body() dto: { phone: string; days: number }) {
+    return this.discountService.activateSubscriptionOnCard(dto.phone, dto.days);
   }
 }
