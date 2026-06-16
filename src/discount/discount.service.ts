@@ -9,7 +9,15 @@ import { PrismaService } from 'src/prisma/prisma.service';
 export class DiscountService {
   constructor(private prisma: PrismaService) {}
   async getAllDiscount() {
-    const discounts = await this.prisma.discountCard.findMany();
+    const discounts = await this.prisma.discountCard.findMany({
+      include: {
+        user: {
+          select: {
+            phone: true,
+          },
+        },
+      },
+    });
     if (!discounts) {
       throw new Error('Discounts not found');
     }
@@ -19,6 +27,13 @@ export class DiscountService {
     const discount = await this.prisma.discountCard.findUnique({
       where: {
         userId,
+      },
+      include: {
+        user: {
+          select: {
+            phone: true,
+          },
+        },
       },
     });
 
