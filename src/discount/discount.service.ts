@@ -14,6 +14,7 @@ export class DiscountService {
         user: {
           select: {
             phone: true,
+            name: true,
           },
         },
       },
@@ -32,6 +33,7 @@ export class DiscountService {
         user: {
           select: {
             phone: true,
+            name: true,
           },
         },
       },
