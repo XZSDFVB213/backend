@@ -8,13 +8,16 @@ async function bootstrap() {
   app.enableCors({
     origin: [
       'http://localhost:4200',
-      'https://socialniy.ru/',
-      'http://socialniy.ru/',
+      'http://localhost:8100',
+
       'https://socialniy.ru',
       'http://socialniy.ru',
-      'https://api.socialniy.ru',
-    ], // Allowed origins
-    credentials: true, // Allow credentials (e.g., cookies)
+
+      'capacitor://localhost',
+      'ionic://localhost',
+      'http://localhost',
+    ],
+    credentials: true,
   });
 
   await app.listen(process.env.PORT ?? 3000);
