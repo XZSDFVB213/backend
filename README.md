@@ -273,3 +273,75 @@ Frontol отправляет запрос POST /notifications/discount/send
 Frontol отправляет запрос POST /notifications/discount/verify
 При success: true — применяется скидка 30%
 При ошибке — скидка не применяется
+
+Интеграция 1С / Frontol → Socialniy
+Создание покупки
+URL
+POST https://api.socialniy.ru/integration/purchases
+Headers
+Content-Type: application/json
+Тело запроса
+{
+  "cardNumber": "044a62f7-4b6d-47db-81c7-b9010adc00c1",
+  "receiptNumber": "FR-00001234",
+  "totalAmount": 3500,
+  "purchasedAt": "2026-07-30T14:30:00.000Z"
+}
+Описание полей
+Поле	Тип	Обязательно	Описание
+cardNumber	string	Да	Номер дисконтной карты клиента
+receiptNumber	string	Нет	Номер чека из Frontol
+totalAmount	number	Да	Сумма покупки в рублях
+purchasedAt	string	Да	Дата и время покупки ISO 8601
+Пример успешного ответа
+{
+  "id": "c11e89d4-131c-4ece-8479-be4d7981c521",
+  "cardNumber": "044a62f7-4b6d-47db-81c7-b9010adc00c1",
+  "discountCardId": "46b96423-a19a-4869-981f-2c6acad4ad93",
+  "userId": "044a62f7-4b6d-47db-81c7-b9010adc00c1",
+  "receiptNumber": "FR-00001234",
+  "totalAmount": 3500,
+  "purchasedAt": "2026-07-30T14:30:00.000Z",
+  "createdAt": "2026-07-30T14:35:00.000Z"
+}
+Логика обработки
+
+При получении покупки система:
+
+Ищет дисконтную карту:
+DiscountCard.cardNumber == cardNumber
+Если карта найдена:
+сохраняет discountCardId
+сохраняет userId, если карта привязана к пользователю
+Если карта не найдена:
+покупка все равно сохраняется
+discountCardId = null
+userId = null
+Ошибки
+Неверный JSON
+
+Ответ:
+
+{
+  "statusCode":400,
+  "message":"Validation failed"
+}
+Дублирование чека
+
+(если потом добавим защиту по receiptNumber)
+
+{
+  "statusCode":409,
+  "message":"Purchase already exists"
+}
+Пример запроса из 1С
+POST /integration/purchases HTTP/1.1
+Host: api.socialniy.ru
+Content-Type: application/json
+
+{
+ "cardNumber":"CARD-000001",
+ "receiptNumber":"1000255",
+ "totalAmount":2400,
+ "purchasedAt":"2026-07-30T20:15:00"
+}

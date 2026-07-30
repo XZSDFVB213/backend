@@ -10,6 +10,7 @@ import { NotificationModule } from './notification/notification.module';
 import { ConfigModule } from '@nestjs/config';
 import { FrontolModule } from './frontol/frontol.module';
 import { DiscountModule } from './discount/discount.module';
+import { PurchaseModule } from './purchase/purchase.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { DiscountModule } from './discount/discount.module';
     }),
     FrontolModule,
     DiscountModule,
+    PurchaseModule,
   ],
   controllers: [AppController],
   providers: [AppService],

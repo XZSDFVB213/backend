@@ -223,7 +223,7 @@ export class NotificationService {
         success: false,
         message: 'Пользователь не найден',
       };
-    }
+    } 
 
     // подписка
     if (
