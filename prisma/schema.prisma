@@ -147,7 +147,7 @@ model Purchase {
   user User? @relation(fields: [userId], references: [id])
 
   // товары из чека
-  items Json
+  // items Json
 
   createdAt DateTime @default(now())
 
