@@ -15,6 +15,7 @@ async function bootstrap() {
 
       'capacitor://localhost',
       'ionic://localhost',
+      'https://localhost',
       'http://localhost',
     ],
     credentials: true,
