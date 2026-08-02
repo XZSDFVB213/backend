@@ -33,6 +33,8 @@ export class PurchaseService {
 
         userId,
 
+        purchasedFrom: dto.purchasedFrom,
+
         receiptNumber: dto.receiptNumber,
 
         totalAmount: dto.totalAmount,

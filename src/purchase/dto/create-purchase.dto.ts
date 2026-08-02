@@ -13,4 +13,7 @@ export class CreatePurchaseDto {
 
   @IsDateString()
   purchasedAt!: string;
+
+  @IsString()
+  purchasedFrom!: string;
 }

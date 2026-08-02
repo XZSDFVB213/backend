@@ -141,6 +141,8 @@ model Purchase {
 
   discountCard DiscountCard? @relation(fields: [discountCardId], references: [id])
 
+  purchasedFrom String?
+
   // если клиент есть в приложении
   userId String?
 

@@ -17,7 +17,7 @@ async function bootstrap() {
       'ionic://localhost',
       'https://localhost',
       'http://localhost',
-    ],
+    ],  
     credentials: true,
   });
 
