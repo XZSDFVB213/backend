@@ -1,4 +1,4 @@
-import { Controller, Post, Body } from '@nestjs/common';
+import { Controller, Post, Body, Get } from '@nestjs/common';
 
 import { PurchaseService } from './purchase.service';
 import { CreatePurchaseDto } from './dto/create-purchase.dto';
@@ -10,5 +10,9 @@ export class PurchaseController {
   @Post()
   create(@Body() dto: CreatePurchaseDto) {
     return this.purchaseService.create(dto);
+  }
+  @Get('fraud')
+  getFraudStatistics() {
+    return this.purchaseService.getFraudStatistics();
   }
 }
