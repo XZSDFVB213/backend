@@ -51,8 +51,6 @@ export class PurchaseService {
 
     const purchases = await this.prisma.purchase.findMany({
       where: {
-        usedSubscription: true,
-
         purchasedAt: {
           gte: weekAgo,
         },
@@ -92,12 +90,15 @@ export class PurchaseService {
         discountCardId: string;
         cardNumber: string;
         count: number;
+
         user: {
           id: string;
           name: string;
           phone: string | null;
         } | null;
+
         lastUsedAt: Date;
+
         purchases: {
           id: string;
           receiptNumber: string | null;
@@ -108,7 +109,9 @@ export class PurchaseService {
     >();
 
     for (const purchase of purchases) {
-      if (!purchase.discountCard) continue;
+      if (!purchase.discountCard) {
+        continue;
+      }
 
       const cardId = purchase.discountCard.id;
 
@@ -133,9 +136,13 @@ export class PurchaseService {
 
       cards.set(cardId, {
         discountCardId: cardId,
+
         cardNumber: purchase.discountCard.cardNumber,
+
         count: 1,
+
         user: purchase.user,
+
         lastUsedAt: purchase.purchasedAt,
 
         purchases: [
@@ -158,7 +165,7 @@ export class PurchaseService {
     return {
       periodDays: 7,
 
-      totalSubscriptionUses: purchases.length,
+      totalPurchases: purchases.length,
 
       cardsUsed: allCards.length,
 
