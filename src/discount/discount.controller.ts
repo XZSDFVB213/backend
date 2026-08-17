@@ -3,6 +3,7 @@
 import { Controller, Get, Req, UseGuards, Post, Body } from '@nestjs/common';
 import { DiscountService } from './discount.service';
 import { JwtAuthGuard } from 'src/auth/jwt/jwt.guard';
+import { DiscountUsedDto } from './dto/discount-user.dto';
 
 @Controller('discount')
 export class DiscountController {
@@ -19,5 +20,13 @@ export class DiscountController {
   @Post('activate')
   activate(@Body() dto: { phone: string; days: number }) {
     return this.discountService.activateSubscriptionOnCard(dto.phone, dto.days);
+  }
+  @Post('used')
+  registerUsage(@Body() dto: DiscountUsedDto) {
+    return this.discountService.registerDiscountUsage(dto);
+  }
+  @Get('fraud')
+  getFraudStatistics() {
+    return this.discountService.getFraudStatistics();
   }
 }

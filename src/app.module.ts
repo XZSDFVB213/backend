@@ -11,6 +11,7 @@ import { ConfigModule } from '@nestjs/config';
 import { FrontolModule } from './frontol/frontol.module';
 import { DiscountModule } from './discount/discount.module';
 import { PurchaseModule } from './purchase/purchase.module';
+import { AdminModule } from './admin/admin.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { PurchaseModule } from './purchase/purchase.module';
     FrontolModule,
     DiscountModule,
     PurchaseModule,
+    AdminModule,
   ],
   controllers: [AppController],
   providers: [AppService],

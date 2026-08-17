@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unnecessary-type-assertion */
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
@@ -124,7 +122,7 @@ export class AuthService {
       throw new BadRequestException('User already exists');
     }
 
-    const hash = await bcrypt.hash(dto.password, 5);
+    const hash = await bcrypt.hash(dto.password, 10);
 
     const user = await this.prisma.user.create({
       data: {
