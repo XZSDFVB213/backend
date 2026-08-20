@@ -18,7 +18,6 @@ export class DiscountController {
     return this.discountService.getMyCard(req.user.id);
   }
   @Post('activate')
-
   activate(@Body() dto: { phone: string; days: number }) {
     return this.discountService.activateSubscriptionOnCard(dto.phone, dto.days);
   }
@@ -29,5 +28,10 @@ export class DiscountController {
   @Get('fraud')
   getFraudStatistics() {
     return this.discountService.getFraudStatistics();
+  }
+  @UseGuards(JwtAuthGuard)
+  @Post('use')
+  useDiscount(@Req() req: any) {
+    return this.discountService.useMyDiscount(req.user.id);
   }
 }

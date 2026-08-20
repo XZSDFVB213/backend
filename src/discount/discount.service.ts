@@ -234,4 +234,85 @@ export class DiscountService {
       suspicious,
     };
   }
+  async useMyDiscount(userId: string) {
+    const card = await this.prisma.discountCard.findUnique({
+      where: {
+        userId,
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            phone: true,
+          },
+        },
+      },
+    });
+
+    if (!card) {
+      throw new BadRequestException('Дисконтная карта не найдена');
+    }
+
+    if (!card.isActive) {
+      throw new BadRequestException('Дисконтная карта заблокирована');
+    }
+
+    if (
+      !card.subscriptionActive ||
+      !card.subscriptionExpiresAt ||
+      card.subscriptionExpiresAt < new Date()
+    ) {
+      throw new BadRequestException('Подписка не активна');
+    }
+
+    const now = new Date();
+
+    // 12 часов
+    const BLOCK_TIME = 12 * 60 * 60 * 1000;
+
+    if (card.lastDiscountUsedAt) {
+      const nextAvailableAt = new Date(
+        card.lastDiscountUsedAt.getTime() + BLOCK_TIME,
+      );
+
+      if (now < nextAvailableAt) {
+        throw new BadRequestException({
+          message:
+            'Скидка уже использовалась. Повторное использование доступно через 12 часов.',
+          nextAvailableAt,
+        });
+      }
+    }
+
+    await this.prisma.$transaction([
+      this.prisma.discountUsage.create({
+        data: {
+          discountCardId: card.id,
+          userId: card.userId,
+          usedAt: now,
+          source: 'APP_QR',
+        },
+      }),
+
+      this.prisma.discountCard.update({
+        where: {
+          id: card.id,
+        },
+        data: {
+          lastDiscountUsedAt: now,
+        },
+      }),
+    ]);
+
+    return {
+      success: true,
+
+      cardNumber: card.cardNumber,
+
+      usedAt: now,
+
+      nextAvailableAt: new Date(now.getTime() + BLOCK_TIME),
+    };
+  }
 }

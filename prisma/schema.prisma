@@ -174,6 +174,7 @@ model DiscountUsage {
 
   receiptNumber String?
   purchasedFrom String?
+  source String?
 
   createdAt DateTime @default(now())
 
