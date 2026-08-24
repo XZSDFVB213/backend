@@ -141,6 +141,7 @@ export class DiscountService {
                 id: true,
                 name: true,
                 phone: true,
+                city: true,
               },
             },
           },
