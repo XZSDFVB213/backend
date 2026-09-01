@@ -129,7 +129,7 @@ model Purchase {
   id String @id @default(uuid())
 
   // номер чека Frontol
-  receiptNumber String? @unique
+  receiptNumber String?
 
   // дата покупки в магазине
   purchasedAt DateTime

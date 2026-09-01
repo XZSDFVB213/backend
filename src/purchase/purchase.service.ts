@@ -1,7 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-/* eslint-disable @typescript-eslint/no-unsafe-return */
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreatePurchaseDto } from './dto/create-purchase.dto';
@@ -23,23 +19,6 @@ export class PurchaseService {
     if (card) {
       discountCardId = card.id;
       userId = card.userId;
-    }
-
-    // 1С может повторно отправить один и тот же чек
-    if (dto.receiptNumber) {
-      const existingPurchase = await this.prisma.purchase.findUnique({
-        where: {
-          receiptNumber: dto.receiptNumber,
-        },
-      });
-
-      if (existingPurchase) {
-        return {
-          success: true,
-          duplicate: true,
-          purchase: existingPurchase,
-        };
-      }
     }
 
     const purchase = await this.prisma.purchase.create({
