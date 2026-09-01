@@ -11,38 +11,56 @@ export class PurchaseService {
   constructor(private prisma: PrismaService) {}
 
   async create(dto: CreatePurchaseDto) {
+    let discountCardId: string | null = null;
+    let userId: string | null = null;
+
     const card = await this.prisma.discountCard.findUnique({
       where: {
         cardNumber: dto.cardNumber,
       },
     });
 
-    let discountCardId: string | null = null;
-    let userId: string | null = null;
-
     if (card) {
       discountCardId = card.id;
-
       userId = card.userId;
     }
 
-    return this.prisma.purchase.create({
+    // 1С может повторно отправить один и тот же чек
+    if (dto.receiptNumber) {
+      const existingPurchase = await this.prisma.purchase.findUnique({
+        where: {
+          receiptNumber: dto.receiptNumber,
+        },
+      });
+
+      if (existingPurchase) {
+        return {
+          success: true,
+          duplicate: true,
+          purchase: existingPurchase,
+        };
+      }
+    }
+
+    const purchase = await this.prisma.purchase.create({
       data: {
+        receiptNumber: dto.receiptNumber,
+        purchasedAt: new Date(dto.purchasedAt),
+        totalAmount: dto.totalAmount,
+
         cardNumber: dto.cardNumber,
-
         discountCardId,
-
         userId,
 
         purchasedFrom: dto.purchasedFrom,
-
-        receiptNumber: dto.receiptNumber,
-
-        totalAmount: dto.totalAmount,
-
-        purchasedAt: new Date(dto.purchasedAt),
       },
     });
+
+    return {
+      success: true,
+      duplicate: false,
+      purchase,
+    };
   }
   async getFraudStatistics() {
     const weekAgo = new Date();
