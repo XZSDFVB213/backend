@@ -1,5 +1,10 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { BadRequestException, Injectable, Logger } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  Logger,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { JwtService } from '@nestjs/jwt';
 import { RegisterDto } from './dto/register.dto';
@@ -16,6 +21,52 @@ export class AuthService {
     private jwt: JwtService,
     private mailService: MailService,
   ) {}
+  private generateAccessToken(userId: string) {
+    return this.jwt.sign(
+      {
+        id: userId,
+        type: 'access',
+      },
+      {
+        expiresIn: '14d',
+      },
+    );
+  }
+
+  private generateRefreshToken(userId: string) {
+    return this.jwt.sign(
+      {
+        id: userId,
+        type: 'refresh',
+      },
+      {
+        expiresIn: '120d',
+      },
+    );
+  }
+
+  private async createTokens(userId: string) {
+    const token = this.generateAccessToken(userId);
+    const refreshToken = this.generateRefreshToken(userId);
+
+    const hashedRefreshToken = await bcrypt.hash(refreshToken, 10);
+
+    await this.prisma.user.update({
+      where: {
+        id: userId,
+      },
+      data: {
+        refreshToken: hashedRefreshToken,
+
+        refreshTokenExpiresAt: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000),
+      },
+    });
+
+    return {
+      token,
+      refreshToken,
+    };
+  }
   async requestPasswordReset(dto: RequestResetDto) {
     const user = await this.prisma.user.findUnique({
       where: { email: dto.email },
@@ -96,17 +147,23 @@ export class AuthService {
         phone: dto.phone,
       },
     });
+
     if (!user) {
-      throw new BadRequestException('User not found');
+      throw new BadRequestException('Пользователь не найден');
     }
-    const valid = bcrypt.compareSync(dto.password, user.password);
+
+    const valid = await bcrypt.compare(dto.password, user.password);
+
     if (!valid) {
       throw new BadRequestException('Пароль не верный');
     }
-    const token = this.jwt.sign({ id: user.id });
-    const { password, ...safeUser } = user;
+
+    const tokens = await this.createTokens(user.id);
+
+    const { password, refreshToken, resetCode, ...safeUser } = user;
+
     return {
-      token,
+      ...tokens,
       user: safeUser,
     };
   }
@@ -146,15 +203,57 @@ export class AuthService {
     });
 
     // 🔥 генерируем JWT сразу после регистрации
-    const token = this.jwt.sign({
-      id: user.id,
-    });
+    const tokens = await this.createTokens(user.id);
 
-    const { password, ...safeUser } = user;
+    const { password, refreshToken, resetCode, ...safeUser } = user;
 
     return {
-      token,
+      ...tokens,
       user: safeUser,
     };
+  }
+  async refresh(oldRefreshToken: string) {
+    if (!oldRefreshToken) {
+      throw new UnauthorizedException('Refresh token отсутствует');
+    }
+
+    let payload: {
+      id: string;
+      type: string;
+    };
+
+    try {
+      payload = this.jwt.verify(oldRefreshToken);
+    } catch {
+      throw new UnauthorizedException('Refresh token истёк или недействителен');
+    }
+
+    if (payload.type !== 'refresh') {
+      throw new UnauthorizedException('Неверный тип токена');
+    }
+
+    const user = await this.prisma.user.findUnique({
+      where: {
+        id: payload.id,
+      },
+    });
+
+    if (!user || !user.refreshToken || !user.refreshTokenExpiresAt) {
+      throw new UnauthorizedException('Refresh token недействителен');
+    }
+
+    if (user.refreshTokenExpiresAt < new Date()) {
+      throw new UnauthorizedException('Refresh token истёк');
+    }
+
+    const valid = await bcrypt.compare(oldRefreshToken, user.refreshToken);
+
+    if (!valid) {
+      throw new UnauthorizedException('Refresh token недействителен');
+    }
+
+    // Ротация:
+    // выдаём и access, и новый refresh
+    return this.createTokens(user.id);
   }
 }
