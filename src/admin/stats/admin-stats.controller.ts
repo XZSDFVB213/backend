@@ -2,10 +2,10 @@ import { Controller, Get, Query, UseGuards } from '@nestjs/common';
 
 import { AdminStatsService } from './admin-stats.service';
 import { JwtAuthGuard } from 'src/auth/jwt/jwt.guard';
-import { OwnerGuard } from '../guards/owner.guard';
+// import { OwnerGuard } from '../guards/owner.guard';
 
 @Controller('admin/stats')
-@UseGuards(JwtAuthGuard, OwnerGuard)
+@UseGuards(JwtAuthGuard)
 export class AdminStatsController {
   constructor(private statsService: AdminStatsService) {}
 
