@@ -5,28 +5,20 @@ import {
   ExecutionContext,
   ForbiddenException,
   Injectable,
-  UnauthorizedException,
 } from '@nestjs/common';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class OwnerGuard implements CanActivate {
-  constructor(private prisma: PrismaService) {}
+  constructor(private config: ConfigService) {}
 
-  async canActivate(context: ExecutionContext): Promise<boolean> {
+  canActivate(context: ExecutionContext): boolean {
     const request = context.switchToHttp().getRequest();
-    const userId = request.user?.id;
+    const user = request.user;
 
-    if (!userId) {
-      throw new UnauthorizedException();
-    }
+    const ownerPhone = this.config.get<string>('OWNER_PHONE');
 
-    const user = await this.prisma.user.findUnique({
-      where: { id: userId },
-      select: { phone: true },
-    });
-
-    if (!user || user.phone !== process.env.OWNER_PHONE) {
+    if (!user || user.phone !== ownerPhone) {
       throw new ForbiddenException('Доступ запрещён');
     }
 
