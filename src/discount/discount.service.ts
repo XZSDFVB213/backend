@@ -76,6 +76,7 @@ export class DiscountService {
       data: {
         subscriptionActive: true,
         subscriptionExpiresAt: expires,
+         subscriptionActivatedAt: new Date(),
       },
     });
   }

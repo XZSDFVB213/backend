@@ -27,7 +27,16 @@ export class AdminStatsService {
 
   async getSummary() {
     const now = new Date();
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0);
 
+    const subscriptionsToday = await this.prisma.discountCard.count({
+      where: {
+        subscriptionActivatedAt: {
+          gte: startOfToday,
+        },
+      },
+    });
     const today = this.startOfTodayMoscow();
 
     const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
@@ -89,7 +98,7 @@ export class AdminStatsService {
       registeredMonth,
 
       totalPurchaseUses: totalPurchases,
-
+      subscriptionsToday,
       usersUsedSubscription: uniqueUsersResult[0]?.count ?? 0,
     };
   }

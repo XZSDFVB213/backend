@@ -119,7 +119,7 @@ model DiscountCard {
 
   subscriptionActive    Boolean   @default(false)
   subscriptionExpiresAt DateTime?
-
+  subscriptionActivatedAt DateTime?
   lastDiscountUsedAt DateTime?
 
   userId String? @unique
