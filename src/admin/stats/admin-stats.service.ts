@@ -27,16 +27,7 @@ export class AdminStatsService {
 
   async getSummary() {
     const now = new Date();
-    const startOfToday = new Date();
-    startOfToday.setHours(0, 0, 0, 0);
 
-    const subscriptionsToday = await this.prisma.discountCard.count({
-      where: {
-        subscriptionActivatedAt: {
-          gte: startOfToday,
-        },
-      },
-    });
     const today = this.startOfTodayMoscow();
 
     const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
@@ -49,9 +40,14 @@ export class AdminStatsService {
       registeredWeek,
       registeredMonth,
       totalPurchases,
+      totalSubscriptions,
+      subscriptionsToday,
+      subscriptionsMonth,
     ] = await Promise.all([
+      // Всего пользователей
       this.prisma.user.count(),
 
+      // Зарегистрировались сегодня
       this.prisma.user.count({
         where: {
           createdAt: {
@@ -60,6 +56,7 @@ export class AdminStatsService {
         },
       }),
 
+      // Зарегистрировались за 7 дней
       this.prisma.user.count({
         where: {
           createdAt: {
@@ -68,6 +65,7 @@ export class AdminStatsService {
         },
       }),
 
+      // Зарегистрировались за 30 дней
       this.prisma.user.count({
         where: {
           createdAt: {
@@ -76,6 +74,7 @@ export class AdminStatsService {
         },
       }),
 
+      // Покупки с подпиской
       this.prisma.purchase.count({
         where: {
           userId: {
@@ -83,22 +82,54 @@ export class AdminStatsService {
           },
         },
       }),
+
+      // Активные подписки сейчас
+      this.prisma.discountCard.count({
+        where: {
+          subscriptionActive: true,
+          subscriptionExpiresAt: {
+            gt: now,
+          },
+        },
+      }),
+
+      // Подписок выдано сегодня
+      this.prisma.discountCard.count({
+        where: {
+          subscriptionActivatedAt: {
+            gte: today,
+          },
+        },
+      }),
+
+      // Подписок выдано за 30 дней
+      this.prisma.discountCard.count({
+        where: {
+          subscriptionActivatedAt: {
+            gte: monthAgo,
+          },
+        },
+      }),
     ]);
 
     const uniqueUsersResult = await this.prisma.$queryRaw<{ count: number }[]>`
-        SELECT COUNT(DISTINCT "userId")::int AS count
-        FROM "Purchase"
-        WHERE "userId" IS NOT NULL
-      `;
+    SELECT COUNT(DISTINCT "userId")::int AS count
+    FROM "Purchase"
+    WHERE "userId" IS NOT NULL
+  `;
 
     return {
       totalUsers,
+
       registeredToday,
       registeredWeek,
       registeredMonth,
 
-      totalPurchaseUses: totalPurchases,
+      totalSubscriptions,
       subscriptionsToday,
+      subscriptionsMonth,
+
+      totalPurchaseUses: totalPurchases,
       usersUsedSubscription: uniqueUsersResult[0]?.count ?? 0,
     };
   }
