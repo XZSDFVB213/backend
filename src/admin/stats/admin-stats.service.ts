@@ -160,6 +160,7 @@ export class AdminStatsService {
             select: {
               subscriptionActive: true,
               subscriptionExpiresAt: true,
+              subscriptionActivatedAt: true,
               lastDiscountUsedAt: true,
             },
           },
